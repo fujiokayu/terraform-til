@@ -137,7 +137,7 @@ module "http_redirect_sg" {
 }
 
 resource "aws_s3_bucket" "alb_log" {
-  bucket = "alb-log-pragmatic-terraform"
+  bucket = "alb-log-pragmatic-terraform-yuuhu04"
 }
 
 resource "aws_lb" "example" {
@@ -169,10 +169,10 @@ output "alb_dns_name" {
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "alb_log_lifecycle_configuration" {
-  bucket  = aws_s3_bucket.alb_log.id
+  bucket = aws_s3_bucket.alb_log.id
   rule {
     # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_lifecycle_configuration
-    id = "rule-1"
+    id     = "rule-1"
     status = "Enabled"
     expiration {
       days = "180"
@@ -192,6 +192,24 @@ resource "aws_lb_listener" "http" {
       content_type = "text/plain"
       message_body = "これは『HTTP』です"
       status_code  = "200"
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "alb_log" {
+  bucket = aws_s3_bucket.alb_log.id
+  policy = data.aws_iam_policy_document.alb_log.json
+}
+
+data "aws_iam_policy_document" "alb_log" {
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:PutObject"]
+    resources = ["arn:aws:s3:::${aws_s3_bucket.alb_log.id}/*"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["582318560864"]
     }
   }
 }
